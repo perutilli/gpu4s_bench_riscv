@@ -45,7 +45,6 @@ where
     pub fn sections_mut(
         &mut self,
     ) -> [Option<MatrixSection<'_, SECTION_SIZE, SIDE, SIZE, N_SECTIONS>>; N_SECTIONS] {
-        // const NONE: MatrixSection<'_, SECTION_SIZE, SIDE, SIZE, N_SECTIONS> = none();
         let mut sections: [Option<MatrixSection<'_, SECTION_SIZE, SIDE, SIZE, N_SECTIONS>>;
             N_SECTIONS] = Default::default();
         self.data
@@ -99,14 +98,10 @@ impl<
         }
     }
 
-    pub const fn none() -> Option<Self> {
-        None
-    }
-
     pub fn multiply(
         &mut self,
-        a: &Matrix<MATRIX_SIDE, MATRIX_SIZE, SIZE, N_SECTIONS>,
-        b: &Matrix<MATRIX_SIDE, MATRIX_SIZE, SIZE, N_SECTIONS>,
+        a: &Matrix<MATRIX_SIDE, MATRIX_SIZE, MATRIX_SIZE, 1>,
+        b: &Matrix<MATRIX_SIDE, MATRIX_SIZE, MATRIX_SIZE, 1>,
     ) {
         self.section_data
             .iter_mut()

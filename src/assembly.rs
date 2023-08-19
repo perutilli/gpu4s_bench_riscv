@@ -8,6 +8,13 @@
 // import a full assembly file, which is what I want here.
 use core::arch::global_asm;
 
+#[cfg(feature = "sequential")]
+global_asm!(include_str!("asm/boot_single_hart.s"));
+#[cfg(any(
+    feature = "parallel",
+    not(any(feature = "sequential", feature = "parallel"))
+))]
 global_asm!(include_str!("asm/boot.s"));
+
 global_asm!(include_str!("asm/mem.s"));
 global_asm!(include_str!("asm/trap.s"));

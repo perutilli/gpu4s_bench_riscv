@@ -8,5 +8,9 @@ edition = "2021"
 [dependencies]
 
 [features]
+
 matrix_multiplication = []
 convolution = []
+
+sequential = []
+parallel = []
