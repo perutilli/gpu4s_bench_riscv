@@ -1,30 +1,14 @@
 #![no_std]
 #![no_main]
 
-use core::arch::asm;
+const N_HARTS: usize = 4;
 
-extern crate panic_halt;
-
-#[macro_export]
-macro_rules! print {
-    ($($args:tt)+) => ({
-        use core::fmt::Write;
-        let _ = write!(unsafe {crate::console::Console::get()}, $($args)+);
-        });
-}
-
-#[macro_export]
-macro_rules! println
-{
-    () => ({
-        print!("\r\n")
-    });
-    ($fmt:expr) => ({
-        print!(concat!($fmt, "\r\n"))
-    });
-    ($fmt:expr, $($args:tt)+) => ({
-        print!(concat!($fmt, "\r\n"), $($args)+)
-    });
+use core::panic::PanicInfo;
+// right now panic only halts one hart => to change this we should use some interrupt probably
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
+    abort();
 }
 
 #[no_mangle]
@@ -36,32 +20,26 @@ extern "C" fn abort() -> ! {
     }
 }
 
-#[no_mangle]
-extern "C" fn main_init() {
-    println!("Hello from the main hart!");
-
-    // Now, we can send an interrupt to the other harts, by setting msip to 1
-    unsafe {
-        asm!("li t3, (1 << 3)");
-        asm!("csrw mie, t3");
-    }
-
-    // spin forever
-    unsafe {
-        asm!("wfi");
-    }
-}
-
-#[no_mangle]
-extern "C" fn hart_init(_hartid: usize) {
-    println!("Hello from secondary hart!");
-
-    // spin forever
-    unsafe {
-        asm!("wfi");
-    }
-}
+#[cfg_attr(
+    feature = "matrix_multiplication",
+    path = "benchmarks/matrix_multiplication.rs"
+)]
+#[cfg_attr(
+    not(feature = "matrix_multiplication"),
+    path = "benchmarks/convolution.rs"
+)]
+mod benchmark;
 
 pub mod assembly;
 pub mod console;
 pub mod uart;
+
+pub mod matrix;
+pub mod shared_matrix;
+
+// move to a CLINT module
+use core::time::Duration;
+pub fn time() -> Duration {
+    let mtime = 0x200_BFF8 as *const u64;
+    Duration::from_nanos(unsafe { mtime.read_volatile() } * 100)
+}

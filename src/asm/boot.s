@@ -38,7 +38,8 @@ _start:
     #                MPP     |  MPIE    |    MIE   |      FS   
 	li		t0, (0b11 << 11) | (1 << 7) | (1 << 3) | (0b01 << 13)
 	csrw	mstatus, t0
-	la		t1, main_init
+    csrr	a0, mhartid
+	la		t1, main
 	csrw	mepc, t1
 	la		t2, asm_trap_vector
 	csrw	mtvec, t2
@@ -73,7 +74,7 @@ _start:
 	csrw	mie, t3
 	# Machine's exception program counter (MEPC) is set to the Rust initialization
 	# code and waiting loop.
-	la		t1, hart_init
+	la		t1, main
 	csrw	mepc, t1
 	# Machine's trap vector base address is set to `m_trap_vector`, for
 	# "machine" trap vector. The Rust initialization routines will give each
